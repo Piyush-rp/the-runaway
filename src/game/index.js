@@ -20,6 +20,7 @@ import { applyNight } from './night.js';
 import { buildStreets } from './streets.js';
 import { removeTreesOnRoads } from './cleanup.js';
 import { Taunter } from './taunts.js';
+import { addSharpen } from './sharpen.js';
 import { Radio } from './radio.js';
 import { Buddy } from './buddy.js';
 import { getAccount, createAccount, msUntilNextChapter, formatCountdown, saveGame, loadGame, completeChapter, signOut, clearSave } from './account.js';
@@ -36,7 +37,7 @@ const BOARDS = { // hoverboards: a street board, a long board for two, and a win
 };
 const PUNCH = { cd: 0.3, range: 1.5, cone: 0.35 };
 const GUN = { cd: 0.18, speed: 50, dmg: 1.4, cone: 0.15 };
-const DRAIN_PER_GUARD = 0.3; // child hp per second per guard still "executing" (guards that have not turned on you yet)
+const DRAIN_PER_GUARD = 0.18; // child hp per second per guard still "executing" (guards that have not turned on you yet)
 const HOSTILE_R = 55; // the gang only turns on you inside the second inner road (ring2, r 55)
 const CLIMB = { max: 30, deadzone: 0.06 }; // boards climb / dive with the camera pitch, up to this height
 const TERM_HOLD = 5, FREE_HOLD = 2; // seconds to hold F (pace knobs: with the speeds above they set the length of the run)
@@ -62,9 +63,10 @@ export function startGame(ctx) {
   const params = new URLSearchParams(location.search);
 
   // hand the camera to the game, and make it night
-  controls.enabled = false; controls.fov = 60; controls.renderScale = params.has('hq') ? 1 : 0.85;
+  controls.enabled = false; controls.fov = 60; controls.renderScale = 1; // full resolution; the adaptive scaler below only steps down when the frame rate really needs it
   camera.near = 0.12; camera.far = 1800; ctx.resize();
   const night = applyNight(ctx); // (also removes the brain from the dome: only the child is inside)
+  const sharpen = addSharpen(ctx); // keeps the picture crisp, most of all when the scaler has to lower the resolution
 
   const input = createInput(canvas);
   const hud = new Hud(canvas.parentElement);
@@ -286,7 +288,7 @@ export function startGame(ctx) {
   // ---------------------------------------------------------------- combat helpers
   function hurtPlayer(dmg, from) {
     if (P.invuln > 0 || state !== 'playing') return;
-    P.hp -= dmg; P.invuln = 0.35; P.sinceHit = 0; cam.shake = 0.8; hud.damageFlash(); sfx.hurt();
+    P.hp -= dmg; P.invuln = 0.9; P.sinceHit = 0; cam.shake = 0.8; hud.damageFlash(); sfx.hurt();
     if (from && P.mode === 'foot') { const d = Math.hypot(P.x - from.x, P.z - from.z) || 1; P.vx += ((P.x - from.x) / d) * 3; P.vz += ((P.z - from.z) / d) * 3; }
     if (P.hp <= 0) knockedOut();
     else if (P.hp < P.maxHp * 0.3) taunt.say('lowHp', { chance: 0.5 });
@@ -856,17 +858,20 @@ export function startGame(ctx) {
   }
 
   // ---------------------------------------------------------------- loop
-  let fpsEma = 60, fpsAcc = 0, hudFrame = 0, ladder = 0, ladderAt = 0;
-  const ladderSteps = [
-    () => { controls.renderScale = 0.7; ctx.resize(); },
-    () => { controls.renderScale = 0.6; composer.renderTarget1.samples = composer.renderTarget2.samples = 0; composer.renderTarget1.dispose(); composer.renderTarget2.dispose(); ctx.resize(); },
-    () => { controls.renderScale = 0.5; bloom.enabled = false; ctx.resize(); },
-  ];
+  // Dynamic resolution: start at full resolution and only step down when the frame rate stays low for a few seconds (the first
+  // seconds are ignored: shaders are still compiling). It climbs back up when there is headroom, so a brief hitch never leaves
+  // the picture soft for good.
+  let fpsEma = 60, fpsAcc = 0, hudFrame = 0, dyn = 1, lowT = 0, highT = 0, msaaOff = false;
+  function applyScale(v) { dyn = v; controls.renderScale = v; ctx.resize(); }
   function adapt(dt) {
     if (params.has('hq')) return;
     fpsEma += ((1 / Math.max(dt, 1e-3)) - fpsEma) * 0.04;
-    if (elapsed < 4 || ladder >= ladderSteps.length || elapsed - ladderAt < 3.5) return;
-    if (fpsEma < 30) { ladderSteps[ladder++](); ladderAt = elapsed; fpsEma = 45; }
+    if (elapsed < 10) return;
+    if (fpsEma < 26) { lowT += dt; highT = 0; } else if (fpsEma > 52) { highT += dt; lowT = 0; } else { lowT = highT = 0; }
+    if (lowT > 4 && dyn > 0.6) { applyScale(Math.max(0.6, +(dyn - 0.1).toFixed(2))); lowT = 0; fpsEma = 38; }
+    else if (highT > 10 && dyn < 1) { applyScale(Math.min(1, +(dyn + 0.1).toFixed(2))); highT = 0; fpsEma = 45; }
+    if (dyn <= 0.7 && !msaaOff) { msaaOff = true; composer.renderTarget1.samples = composer.renderTarget2.samples = 0; composer.renderTarget1.dispose(); composer.renderTarget2.dispose(); }
+    if (dyn <= 0.6 && fpsEma < 22 && bloom.enabled) bloom.enabled = false;
   }
   function titleCamera(t) {
     const a = t * 0.07 + 0.6, r = 74;
@@ -1024,6 +1029,7 @@ export function startGame(ctx) {
     input.endFrame();
   }
   onTick(frame);
+  onTick(() => sharpen.update(controls.renderScale)); // runs in every state, title screen included
 
   // ---------------------------------------------------------------- flow
   function begin() {

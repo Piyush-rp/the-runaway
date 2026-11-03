@@ -5,10 +5,10 @@ import { makeHumanoid, setPose, flash } from './models.js';
 import { moveXZ, stepVertical, angleLerp } from './physics.js';
 
 export const KINDS = {
-  thug:     { hp: 3,  speed: 3.0, range: 1.0, windup: 0.45, dmg: 8,  cd: 1.25, kb: 1.0 },
-  enforcer: { hp: 7,  speed: 2.5, range: 1.3, windup: 0.62, dmg: 16, cd: 1.9, kb: 0.45 },
-  sprinter: { hp: 2,  speed: 4.3, range: 0.95, windup: 0.3,  dmg: 6,  cd: 0.95, kb: 1.2 },
-  captain:  { hp: 16, speed: 3.3, range: 1.4, windup: 0.5,  dmg: 14, cd: 1.3, kb: 0.3, lunge: true },
+  thug:     { hp: 3,  speed: 3.0, range: 1.0, windup: 0.45, dmg: 4,  cd: 1.6, kb: 1.0 },
+  enforcer: { hp: 7,  speed: 2.5, range: 1.3, windup: 0.62, dmg: 8,  cd: 2.4, kb: 0.45 },
+  sprinter: { hp: 2,  speed: 4.3, range: 0.95, windup: 0.3,  dmg: 3,  cd: 1.2, kb: 1.2 },
+  captain:  { hp: 16, speed: 3.3, range: 1.4, windup: 0.5,  dmg: 7,  cd: 1.6, kb: 0.3, lunge: true },
 };
 const SIDES = [0, 0.55, -0.55, 1.1, -1.1, 1.75, -1.75, 2.4, -2.4];
 

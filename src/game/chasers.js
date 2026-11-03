@@ -7,14 +7,16 @@ import { makeBot, makeHumanoid, setPose, flash } from './models.js';
 import { WORLD_R } from './physics.js';
 import { sfx } from './audio.js';
 
-const CFG = { hp: 5, max: 6.5, acc: 8, turn: 3.0, r: 0.7, ramCd: 1.8, dmg: 8, hover: 1.2, climb: 9, fall: 6, shotDmg: 6, shotSpeed: 20, shotRange: 28 };
+// ring: the standoff distance they keep from you; lift: how far above your head height they hover (a shallow angle, never overhead)
+const CFG = { hp: 5, max: 6.5, acc: 8, turn: 3.0, r: 0.7, ring: 4.5, lift: 1.3, hover: 1.2, climb: 9, fall: 6, shotDmg: 3.5, shotSpeed: 20, shotRange: 28 };
 const LOOK_AHEAD = [3, 6, 10, 15];
+const LOOK_NEAR = [2, 4];
 
 export class Chaser {
   constructor(game, x, z, heading = 0) {
     this.game = game; this.kind = 'rider'; this.cfg = { range: 1.4, kb: 0.6 };
     this.x = x; this.z = z; this.y = game.hm.h(x, z) + CFG.hover; this.heading = heading; this.speed = 3;
-    this.hp = this.maxHp = CFG.hp; this.alive = true; this.dead = false; this.r = CFG.r; this.hitH = 1.4; this.shotCd = 1.4 + Math.random();
+    this.hp = this.maxHp = CFG.hp; this.alive = true; this.dead = false; this.r = CFG.r; this.hitH = 1.4; this.shotCd = 2.5 + Math.random() * 1.5; this.orbit = Math.random() < 0.5 ? 1 : -1; this.orbitT = 5 + Math.random() * 5;
     this.state = 'chase'; this.t = 0; this.cd = 1.2; this.homeX = x; this.homeZ = z; this.aggro = 1; this.guardCell = null;
     this.bot = makeBot('#FF2D55', 'drone');
     this.h = makeHumanoid('rider');
@@ -70,12 +72,26 @@ export class Chaser {
     if (dp > 150) { this.destroy(); return; } // left far behind: it will be replaced by a fresh pursuer
     // head straight for the player; right above them, hover and circle
     if (!g.hostile) { this.calm = (this.calm || 0) + dt; if (this.calm > 5) { this.destroy(); return; } } else this.calm = 0; // they give up outside the hostile zone
-    let want = g.hostile ? Math.atan2(dx, dz) : this.heading;
-    if (dp < 2.2) want += 1.4;
+    // keep a standoff: close in to the ring, then circle you at that distance, a little above head height and at an angle.
+    // They never get directly overhead and they do not ram, so they are easy to shoot.
+    const R = CFG.ring;
+    let want = this.heading;
+    if (g.hostile) {
+      const radial = Math.atan2(dx, dz); // toward the player
+      if (dp > R + 1.2) want = radial;
+      else {
+        this.orbitT -= dt; if (this.orbitT <= 0) { this.orbit *= -1; this.orbitT = 5 + Math.random() * 5; }
+        let tang = radial + this.orbit * Math.PI / 2;
+        // circle toward open ground: if a tall building is ahead on this side, go the other way (keeps the angle shallow)
+        if (hm.maxUnder(this.x + Math.sin(tang) * 3.5, this.z + Math.cos(tang) * 3.5, this.r) > P.y + 2.5) { this.orbit *= -1; tang = radial + this.orbit * Math.PI / 2; this.orbitT = 5 + Math.random() * 5; }
+        const err = THREE.MathUtils.clamp((dp - R) / 2, -1, 1); // err > 0: too far, < 0: too close
+        want = Math.atan2(Math.sin(tang) + Math.sin(radial) * err * 1.3, Math.cos(tang) + Math.cos(radial) * err * 1.3);
+      }
+    }
     let da = ((want - this.heading + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
     this.heading += Math.max(-CFG.turn * dt, Math.min(CFG.turn * dt, da));
     this.bank += (Math.max(-1, Math.min(1, da)) * 0.35 - this.bank) * Math.min(1, dt * 6);
-    const targetSp = !g.hostile ? 1.5 : dp < 2.2 ? 3 : CFG.max;
+    const targetSp = !g.hostile ? 1.5 : dp > R + 1.2 ? CFG.max : 3.2;
     this.speed += (targetSp - this.speed) * Math.min(1, dt * (this.speed < targetSp ? CFG.acc / CFG.max : 3));
     const s = Math.sin(this.heading), c = Math.cos(this.heading);
     const nx = this.x + s * this.speed * dt, nz = this.z + c * this.speed * dt;
@@ -83,9 +99,12 @@ export class Chaser {
 
     // fly over whatever is ahead: look along the heading, climb early enough to clear it
     let top = hm.maxUnder(this.x, this.z, this.r);
-    for (const d of LOOK_AHEAD) top = Math.max(top, hm.maxUnder(this.x + s * d, this.z + c * d, this.r));
-    const ty = top + CFG.hover + Math.sin(g.time * 2.4 + this.phase) * 0.12;
+    for (const d of (g.hostile && dp < CFG.ring + 3 ? LOOK_NEAR : LOOK_AHEAD)) top = Math.max(top, hm.maxUnder(this.x + s * d, this.z + c * d, this.r)); // circling: only look a little ahead, so they stay low
+    const ty = Math.max(top + CFG.hover, P.y + CFG.lift) + Math.sin(g.time * 2.4 + this.phase) * 0.12; // a shallow angle above you, not straight overhead
     this.y += Math.max(-CFG.fall * dt, Math.min(CFG.climb * dt, ty - this.y));
+
+    // never closer than a minimum distance: shove back out so they can't hang right over your head
+    if (g.hostile && dp < 3.4) { const k = (3.4 - dp) * 2.5 * dt, nx2 = this.x - (dx / (dp || 1)) * k, nz2 = this.z - (dz / (dp || 1)) * k; if (Math.hypot(nx2, nz2) < WORLD_R) { this.x = nx2; this.z = nz2; } }
 
     // keep apart from other riders
     for (const o of g.enemies) {
@@ -94,26 +113,17 @@ export class Chaser {
       if (d2 < 2.5 && d2 > 1e-4) { const d = Math.sqrt(d2), p = (1.6 - d) * 3 * dt; this.x += (ox / d) * p; this.z += (oz / d) * p; }
     }
 
-    // ram: contact with the player (on foot or on a bot), at any height they can both reach
-    const dy = Math.abs(P.y + 0.3 - (this.y + 0.4));
-    if (g.hostile && this.cd <= 0 && dp < this.r + 0.55 && dy < 1.4) {
-      this.cd = CFG.ramCd; this.speed *= 0.3; this.state = 'strike'; this.t = 0;
-      g.enemyHit(this, CFG.dmg);
-      if (P.mode === 'bot') { P.bot.speed *= 0.6; g.cam.shake = Math.max(g.cam.shake, 0.6); }
-      g.fx.spawn((this.x + P.x) / 2, this.y + 0.6, (this.z + P.z) / 2, '#ff7a90', 2.4, 0.3);
-    } else if (this.state === 'strike' && this.t > 0.3) this.state = 'chase';
-
     // ranged attack: a slow red bolt at the player (dodge it, or take it); needs a clear line over the rooftops
     this.shotCd -= dt;
     if (g.hostile && this.shotCd <= 0 && dp > 2.5 && dp < CFG.shotRange && this.clearShot(P)) {
-      this.shotCd = 1.5 + Math.random() * 0.9;
+      this.shotCd = 2.4 + Math.random() * 1.2;
       const ox = this.x, oy = this.y + this.bot.seatY + 0.35, oz = this.z;
       const tx = P.x + (Math.random() - 0.5) * 0.25, ty = (P.mode === 'bot' ? P.bot.y + P.bot.mesh.seatY * 0.7 : P.y + 0.3), tz = P.z + (Math.random() - 0.5) * 0.25;
       let ex = tx - ox, ey = ty - oy, ez = tz - oz; const L = Math.hypot(ex, ey, ez) || 1; ex /= L; ey /= L; ez /= L;
       g.proj.fire('enemy', ox + ex * 0.5, oy + ey * 0.5, oz + ez * 0.5, ex, ey, ez, { speed: CFG.shotSpeed, dmg: CFG.shotDmg, life: 2.2 });
       g.fx.spawn(ox + ex * 0.5, oy, oz + ez * 0.5, '#ff7a90', 0.9, 0.15); sfx.zap();
     }
-    setPose(this.h, { stand: true, lean: 0.2, aim: this.shotCd > 1.1 ? 1 : 0 }, dt);
+    setPose(this.h, { stand: true, lean: 0.2, aim: this.shotCd > 2.0 ? 1 : 0 }, dt);
     this.sync();
     this.bot.lift.rotation.z = THREE.MathUtils.lerp(this.bot.lift.rotation.z, -this.bank, Math.min(1, dt * 8));
   }
