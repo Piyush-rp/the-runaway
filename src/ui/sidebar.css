@@ -1,0 +1,74 @@
+/* AURA left rail. Coordinates from ref/dashboard.png: rail x 0..70, y 69..840. */
+#sidebar.sb { overflow: visible; }
+.sb-rail {
+  position: absolute; left: 0; top: 5px; width: 71px; height: 808px;
+  background: linear-gradient(180deg, rgba(1, 11, 23, .97), rgba(1, 13, 27, .97));
+  border-right: 1px solid rgba(30, 90, 170, .55);
+  box-shadow: 1px 0 6px rgba(20, 100, 220, .16);
+  transition: transform .35s ease;
+}
+/* separator near the bottom: a thin line with a rounded corner that turns down and fades */
+.sb-rail::after {
+  content: ''; position: absolute; left: -14px; top: 771px; width: 77px; height: 26px;
+  border-top: 1px solid rgba(34, 96, 176, .75); border-right: 1px solid rgba(34, 96, 176, .6);
+  border-top-right-radius: 12px; pointer-events: none;
+  -webkit-mask: linear-gradient(180deg, #000 30%, transparent); mask: linear-gradient(180deg, #000 30%, transparent);
+}
+.sb-list { list-style: none; position: absolute; left: 0; top: 32px; width: 100%; transition: opacity .2s; }
+.sb-list li { height: 64.6px; }
+.sb-item {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  margin-left: 4px; width: 61px; height: 54px; border-radius: 7px; cursor: pointer;
+  background: transparent; border: 1px solid transparent; color: #D2DAE8;
+  transition: background .2s, color .2s, box-shadow .2s, border-color .2s;
+}
+.sb-ico { display: flex; transition: filter .2s, transform .2s; }
+.sb-item:hover { background: rgba(58, 134, 255, .08); border-color: rgba(58, 134, 255, .22); color: #EAF2FF; }
+.sb-item:hover .sb-ico { filter: drop-shadow(0 0 4px rgba(90, 170, 255, .6)); }
+.sb-item:active .sb-ico { transform: scale(.92); }
+
+.sb-item.active {
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 50%, rgba(40, 70, 220, .25), transparent 80%),
+    linear-gradient(180deg, rgba(52, 46, 150, .55), rgba(30, 30, 105, .5) 60%, rgba(36, 30, 115, .55)),
+    rgba(12, 10, 44, .7);
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(80, 90, 255, .35), inset 0 0 14px rgba(60, 80, 255, .25);
+  color: #4CC4FF;
+}
+.sb-item.active::before {
+  /* gradient border: purple sides, faint top/bottom */
+  content: ''; position: absolute; inset: -1px; border-radius: 7px; padding: 1.5px; pointer-events: none;
+  background: linear-gradient(90deg, #C070FF 0%, #8A5CFF 5%, rgba(90, 80, 220, .22) 16%, rgba(90, 80, 220, .22) 84%, #8A5CFF 95%, #B068FF 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+.sb-item.active .sb-ico { filter: drop-shadow(0 0 4px rgba(40, 150, 255, .95)) drop-shadow(0 0 9px rgba(30, 110, 255, .7)); }
+
+.sb-collapse {
+  position: absolute; left: 4px; top: 712px; width: 61px; height: 44px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  background: none; border: 1px solid transparent; color: #E6ECF6;
+  transition: background .2s, color .2s, border-color .2s, left .35s, width .35s;
+}
+.sb-collapse:hover { background: rgba(58, 134, 255, .08); border-color: rgba(58, 134, 255, .22); color: #7FD8FF; }
+.sb-collapse svg { transition: transform .3s; }
+.sb.collapsed .sb-collapse svg { transform: rotate(180deg); }
+.sb.collapsed .sb-rail { transform: translateX(-52px); }
+.sb.collapsed .sb-list { opacity: 0; pointer-events: none; }
+.sb.collapsed .sb-collapse { left: 52px; width: 18px; }
+
+/* Tooltips */
+.sb-tip {
+  position: absolute; left: calc(100% + 12px); top: 50%; transform: translate(-4px, -50%);
+  padding: 5px 10px; border-radius: 7px; white-space: nowrap; pointer-events: none;
+  font: 500 12px/1.2 var(--font-ui); color: var(--text-primary);
+  background: rgba(11, 18, 32, .96); border: 1px solid rgba(58, 134, 255, .4);
+  box-shadow: 0 0 10px rgba(58, 134, 255, .25), 0 6px 18px rgba(0, 0, 0, .5);
+  opacity: 0; transition: opacity .15s, transform .15s; z-index: 20;
+}
+.sb-tip::before {
+  content: ''; position: absolute; left: -5px; top: 50%; width: 8px; height: 8px; margin-top: -4px;
+  background: inherit; border-left: inherit; border-bottom: inherit; transform: rotate(45deg);
+}
+.sb-item:hover .sb-tip, .sb-collapse:hover .sb-tip, .sb-item:focus-visible .sb-tip { opacity: 1; transform: translate(0, -50%); }

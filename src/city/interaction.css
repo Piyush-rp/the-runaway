@@ -1,0 +1,60 @@
+/* Agent card shown when a rooftop icon is clicked. */
+.agent-card {
+  position: absolute; z-index: 20; width: 264px; padding: 14px 16px 14px;
+  background: linear-gradient(180deg, rgba(12, 20, 38, 0.96), rgba(11, 18, 32, 0.94));
+  border: 1px solid color-mix(in srgb, var(--accent, #3A86FF) 55%, transparent);
+  border-radius: 14px; color: var(--text-primary); font-family: var(--font-ui);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent, #3A86FF) 35%, transparent), 0 12px 40px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  transform: translate(-50%, calc(-100% - 22px)); pointer-events: auto;
+  animation: agent-card-in 0.18s ease-out;
+}
+.agent-card::after {
+  content: ''; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px;
+  background: rgba(11, 18, 32, 0.96); border-right: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); transform: translateX(-50%) rotate(45deg);
+}
+@keyframes agent-card-in { from { opacity: 0; transform: translate(-50%, calc(-100% - 12px)); } }
+.agent-card__head { display: flex; align-items: center; gap: 11px; }
+.agent-card__icon {
+  flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--accent) 80%, #fff 10%), color-mix(in srgb, var(--accent) 45%, #000));
+  box-shadow: 0 0 14px var(--accent), inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, #fff);
+}
+.agent-card__icon svg { width: 20px; height: 20px; }
+.agent-card__name { font-size: 15px; font-weight: 600; line-height: 1.2; }
+.agent-card__building { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; }
+.agent-card__role { font-size: 12.5px; line-height: 1.45; color: var(--text-secondary); margin: 11px 0 12px; }
+.agent-card__foot { display: flex; align-items: center; justify-content: space-between; }
+.agent-card__status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); }
+.agent-card__status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+.agent-card__open {
+  font: 500 12px var(--font-ui); color: var(--text-primary); cursor: pointer; padding: 6px 11px; border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 22%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.agent-card__open:hover { background: color-mix(in srgb, var(--accent) 38%, transparent); }
+
+/* Full-page floor view. Only the shell for now; the floor structure is built later. */
+.floor-view {
+  position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column;
+  background: radial-gradient(ellipse at 50% 40%, rgba(15, 26, 43, 0.97), rgba(7, 11, 22, 0.99));
+  color: var(--text-primary); font-family: var(--font-ui);
+  animation: floor-in 0.35s cubic-bezier(.2, .8, .2, 1);
+}
+.floor-view.closing { animation: floor-out 0.25s ease-in forwards; }
+@keyframes floor-in { from { opacity: 0; transform: scale(0.96); } }
+@keyframes floor-out { to { opacity: 0; transform: scale(0.97); } }
+.floor-view__bar {
+  display: flex; align-items: center; gap: 14px; padding: 16px 22px;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.floor-view__back {
+  display: inline-flex; align-items: center; gap: 6px; font: 500 13px var(--font-ui); color: var(--text-primary);
+  background: transparent; border: 1px solid var(--border); border-radius: 9px; padding: 7px 12px; cursor: pointer;
+}
+.floor-view__back:hover { border-color: var(--accent); }
+.floor-view__back svg { width: 16px; height: 16px; }
+.floor-view__title { font-size: 18px; font-weight: 600; }
+.floor-view__sub { font-size: 12.5px; color: var(--text-secondary); }
+.floor-view__stage { flex: 1; display: grid; place-items: center; }
+.floor-view__placeholder { color: var(--text-muted); font-size: 13px; letter-spacing: 0.04em; }

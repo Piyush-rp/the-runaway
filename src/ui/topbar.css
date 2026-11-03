@@ -1,0 +1,138 @@
+/* AURA top bar. Coordinates measured from ref/dashboard.png (1536x1024). */
+#topbar.tb { height: 64px; overflow: visible; pointer-events: none; }
+.tb > * { pointer-events: auto; }
+.tb .tb-shape { position: absolute; left: 0; top: 0; height: 80px; overflow: visible; pointer-events: none; }
+.tb .tb-shade { fill: rgba(2, 6, 16, 0.55); transform: translateY(5px); }
+.tb .tb-edge-glow { opacity: .35; }
+
+/* Brand */
+.tb-brand { position: absolute; left: 0; top: 0; width: 280px; height: 64px; }
+.tb-logo { position: absolute; left: 20px; top: 12px; overflow: visible; }
+.tb-div {
+  display: block; width: 1px; height: 36px;
+  background: linear-gradient(180deg, rgba(58,134,255,0), rgba(70,110,170,.38) 30%, rgba(70,110,170,.38) 70%, rgba(58,134,255,0));
+}
+.tb-div-brand { position: absolute; left: 77px; top: 16px; }
+.tb-words { position: absolute; left: 95px; top: 0; }
+.tb-wordmark { position: absolute; left: -6.9px; top: 14.8px; overflow: visible; }
+.tb-tagline {
+  position: absolute; left: 0; top: 43px; white-space: nowrap;
+  font-family: var(--font-ui); font-weight: 600; font-size: 8.8px; line-height: 12px;
+  letter-spacing: 0.142em; color: #8E9AB0;
+}
+
+/* Search pill */
+.tb-search {
+  position: absolute; top: 8px; left: calc(50% - 263px); width: 525px; height: 37px;
+  display: flex; align-items: center; cursor: text;
+  background: linear-gradient(180deg, rgba(10, 22, 44, .92), rgba(9, 20, 40, .92));
+  border: 1px solid rgba(52, 122, 228, .7); border-radius: 13px;
+  box-shadow: 0 0 10px rgba(30, 110, 255, .22), inset 0 0 12px rgba(40, 110, 230, .10);
+  transition: border-color .2s, box-shadow .2s;
+}
+.tb-search:focus-within { border-color: rgba(70, 160, 255, .9); box-shadow: 0 0 16px rgba(30, 130, 255, .4), inset 0 0 14px rgba(40, 110, 230, .16); }
+.tb-search-icon { position: absolute; left: 10px; top: 7px; color: #E3EAF6; display: flex; }
+.tb-search input {
+  position: absolute; left: 49px; right: 80px; top: 0; height: 100%;
+  background: none; border: 0; outline: 0; color: var(--text-primary);
+  font-family: var(--font-ui); font-size: 12.8px; font-weight: 400; letter-spacing: 0;
+}
+.tb-search input::placeholder { color: #8391AA; opacity: 1; }
+.tb-round {
+  position: absolute; top: 5px; width: 23px; height: 23px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  background: radial-gradient(circle at 50% 45%, #0A1322, #070E1A); border: 0; color: #46617F;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, .6);
+  transition: background .2s, color .2s, box-shadow .2s;
+}
+.tb-round.r1 { right: 47px; }
+.tb-round.r2 { right: 11px; top: 6px; width: 21px; height: 21px; }
+.tb-round:hover { background: #15243a; color: #8FB4E8; box-shadow: 0 0 8px rgba(58,134,255,.35); }
+
+/* Right cluster (anchored to the right edge) */
+.tb-right { position: absolute; right: 0; top: 0; width: 360px; height: 52px; }
+.tb-right > * { position: absolute; }
+.tb-right .tb-div { top: 16px; height: 22px; background: linear-gradient(180deg, rgba(58,134,255,0), rgba(60,100,160,.42) 30%, rgba(60,100,160,.42) 70%, rgba(58,134,255,0)); }
+.tb-right .d1 { right: 312px; }
+.tb-right .d2 { right: 245px; }
+.tb-right .d3 { right: 192px; }
+.tb-bell {
+  right: 330px; top: 16px; width: 24px; height: 24px; margin-right: -2px; padding: 0; border: 0; background: none;
+  color: #F2F5FA; cursor: pointer; display: flex; transition: color .2s, filter .2s;
+}
+.tb-bell:hover { color: #7FD8FF; filter: drop-shadow(0 0 5px rgba(0, 200, 255, .7)); }
+
+/* Glowing swirling orb avatar */
+.tb-orb {
+  right: 259px; top: 9px; width: 35px; height: 35px; border-radius: 50%; overflow: hidden; cursor: pointer;
+  background: radial-gradient(circle at 50% 50%, #170f5c 0%, #0a0d46 50%, #0c1658 74%, #22389c 100%);
+  box-shadow: 0 0 0 .8px rgba(200, 212, 255, .5), 0 0 7px 1px rgba(110, 100, 255, .4), 0 0 14px rgba(70, 110, 255, .22);
+}
+/* radial streak texture, slowly rotating */
+.tb-orb-swirl {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(110, 140, 255, .22) 0deg 3deg, transparent 3deg 9deg, rgba(160, 110, 255, .16) 9deg 11deg, transparent 11deg 17deg);
+  -webkit-mask: radial-gradient(circle, transparent 18%, #000 40%, #000 80%, transparent 96%);
+  mask: radial-gradient(circle, transparent 18%, #000 40%, #000 80%, transparent 96%);
+  filter: blur(.6px); animation: tb-spin 16s linear infinite;
+}
+.tb-orb-swirl.b {
+  background: radial-gradient(ellipse 22% 18% at 16% 54%, rgba(70, 160, 255, .95), transparent 80%),
+              radial-gradient(ellipse 24% 20% at 82% 56%, rgba(50, 150, 255, .95), transparent 80%),
+              radial-gradient(ellipse 30% 22% at 70% 78%, rgba(40, 90, 255, .7), transparent 80%),
+              radial-gradient(ellipse 26% 20% at 28% 80%, rgba(40, 80, 230, .55), transparent 80%);
+  -webkit-mask: none; mask: none; filter: blur(.8px); animation: tb-wobble 6s ease-in-out infinite;
+}
+.tb-orb-fan {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(ellipse 30% 42% at 50% 32%, rgba(230, 70, 255, .95), rgba(170, 50, 245, .55) 50%, transparent 80%),
+              radial-gradient(ellipse 22% 30% at 34% 34%, rgba(140, 50, 235, .6), transparent 80%),
+              radial-gradient(ellipse 14% 22% at 50% 78%, rgba(200, 80, 255, .7), transparent 80%);
+  mix-blend-mode: lighten; animation: tb-pulse 3.2s ease-in-out infinite;
+}
+.tb-orb-beam {
+  position: absolute; left: 50%; top: 0; width: 2px; height: 100%; margin-left: -1px;
+  background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,215,255,.95) 28%, rgba(255,255,255,.25) 50%, rgba(230,190,255,.9) 70%, rgba(255,255,255,1));
+  box-shadow: 0 0 3px 1px rgba(230, 120, 255, .9), 0 0 7px 1px rgba(200, 90, 255, .5);
+  animation: tb-beam 2.6s ease-in-out infinite;
+}
+.tb-orb-beam.h { left: 0; top: 50%; width: 100%; height: 1px; margin: 0; background: linear-gradient(90deg, transparent 4%, rgba(150,200,255,.55) 16%, transparent 40%, transparent 60%, rgba(150,200,255,.55) 84%, transparent 96%); box-shadow: none; animation: none; }
+.tb-orb-spark { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff; box-shadow: 0 0 3px 1.5px #7fc0ff, 0 0 6px 2px rgba(60, 130, 255, .55); animation: tb-twinkle 2.2s ease-in-out infinite; }
+.tb-orb-spark.s1 { left: 7px; top: 22px; }
+.tb-orb-spark.s2 { right: 7px; top: 22px; width: 4px; animation-delay: .8s; }
+.tb-orb-spark.s3 { right: 8px; top: 13px; width: 2px; height: 2px; animation-delay: 1.5s; }
+.tb-orb-core {
+  position: absolute; left: 50%; top: 50%; width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; border-radius: 50%;
+  background: radial-gradient(circle, #121a70 0%, #0e1660 65%, rgba(30, 60, 200, 0) 100%); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 4px 1.5px rgba(60, 130, 255, .7);
+}
+.tb-orb-core svg { filter: drop-shadow(0 0 1.5px #9fd0ff); }
+.tb-orb-glass {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 32% 22%, rgba(255,255,255,.2), transparent 28%),
+              radial-gradient(circle at 50% 50%, transparent 70%, rgba(170,190,255,.35) 82%, rgba(225,232,255,.75) 93%, rgba(200,210,255,.55) 100%);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,.5);
+}
+.tb-orb:hover { box-shadow: 0 0 0 1.2px rgba(230, 236, 255, .95), 0 0 12px 3px rgba(140, 120, 255, .75), 0 0 24px rgba(80, 140, 255, .5); }
+
+/* Dark moon avatar */
+.tb-avatar {
+  right: 200px; top: 11px; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+  background: radial-gradient(circle, #0a121f 60%, #0b1626 100%);
+  border: 1.5px solid #12304F; display: flex; align-items: center; justify-content: center;
+  transition: border-color .2s, box-shadow .2s;
+}
+.tb-avatar:hover { border-color: #3A86FF; box-shadow: 0 0 8px rgba(58, 134, 255, .5); }
+.tb-moon { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 5px rgba(170, 195, 240, .35); }
+.tb-moon svg { display: block; }
+
+/* Clock */
+.tb-clock { left: 180px; top: 9px; white-space: nowrap; font-family: var(--font-ui); }
+.tb-date { font-size: 11.3px; line-height: 15px; color: #9AA6BC; font-weight: 400; letter-spacing: .01em; }
+.tb-time { margin-top: 1.5px; font-size: 13px; line-height: 16px; color: #FFFFFF; font-weight: 500; letter-spacing: .015em; }
+
+@keyframes tb-spin { to { transform: rotate(360deg); } }
+@keyframes tb-beam { 50% { opacity: .7; } }
+@keyframes tb-wobble { 50% { transform: rotate(-14deg) scale(1.05); } }
+@keyframes tb-pulse { 50% { opacity: .75; } }
+@keyframes tb-twinkle { 50% { opacity: .25; transform: scale(.6); } }

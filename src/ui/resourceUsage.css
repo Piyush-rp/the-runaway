@@ -1,0 +1,25 @@
+/* Resource Usage panel, measured from ref/dashboard.png (panel 1271..1522 x 874..1005). */
+#resource-usage.panel {
+  right: 13px; bottom: 19px; width: 252px; height: 131px;
+  background: linear-gradient(180deg, rgba(0, 15, 29, 0.97), rgba(0, 12, 26, 0.97));
+  border: 1px solid rgba(22, 80, 150, 0.52);
+  border-radius: 17px;
+  box-shadow: 0 0 10px rgba(0, 120, 255, 0.10), 0 10px 30px rgba(0, 0, 0, 0.55), inset 0 0 18px rgba(30, 110, 220, 0.05);
+  font-family: var(--font-ui);
+  overflow: hidden;
+}
+.ru-head { position: absolute; left: 17px; right: 16px; top: 12px; height: 20px; display: flex; align-items: center; justify-content: space-between; }
+.ru-title { transform: scaleX(.87); transform-origin: 0 50%; color: #fff; font-size: 13.5px; font-weight: 500; letter-spacing: 0; }
+.ru-live { font-size: 12.5px; font-weight: 400; color: #00F5D4; gap: 6px; margin-right: 1px; }
+.ru-live::before { width: 9px; height: 9px; background: #00F5D4; box-shadow: 0 0 8px #00F5D4; animation: ru-live-pulse 2.4s ease-in-out infinite; }
+@keyframes ru-live-pulse { 50% { opacity: .7; } }
+
+.ru-gauge { position: absolute; top: 38.5px; width: 80px; height: 80px; }
+.ru-gauge svg { position: absolute; inset: 0; overflow: visible; }
+.ru-track { fill: none; stroke-width: 5.6; }
+.ru-arc {
+  fill: none; stroke: var(--c); stroke-width: 5.6; stroke-linecap: butt;
+  filter: drop-shadow(0 0 1.2px var(--c)) drop-shadow(0 0 4px color-mix(in srgb, var(--c) 35%, transparent));
+}
+.ru-label { position: absolute; left: 0; right: 0; top: 23px; text-align: center; color: #A2B2CA; font-size: 11px; transform: scaleX(.85); font-weight: 400; line-height: 13px; }
+.ru-val { position: absolute; left: 0; right: 0; top: 39px; text-align: center; color: #fff; font-size: 16.6px; transform: scaleX(.95); font-weight: 400; line-height: 20px; letter-spacing: -0.2px; }

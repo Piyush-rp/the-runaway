@@ -1,0 +1,32 @@
+/* System Status panel (bottom-left). Measured against ref/dashboard.png @1536x1024. */
+#system-status.panel {
+  height: 132px;
+  background: linear-gradient(180deg, rgba(1, 14, 28, 0.95), rgba(0, 12, 26, 0.95));
+  border: 1px solid #0B3B63;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.04), 0 10px 40px rgba(0, 0, 0, 0.55), inset 0 0 22px rgba(30, 110, 220, 0.07);
+  font-family: var(--font-ui);
+  overflow: hidden;
+}
+#system-status .ss-title {
+  position: absolute; left: 19.5px; top: 7px; line-height: 16px;
+  font-size: 12.6px; font-weight: 600; color: #FFFFFF; letter-spacing: 0;
+}
+#system-status .ss-gauge { position: absolute; left: 13.8px; top: 24px; width: 114px; height: 114px; overflow: visible; }
+#system-status .ss-arc { filter: drop-shadow(0 0 1.5px rgba(0, 170, 255, .55)) drop-shadow(0 0 4px rgba(0, 110, 230, .45)); }
+#system-status .ss-pct {
+  position: absolute; left: 1px; width: 140px; top: 65px; line-height: 20px; text-align: center;
+  font-size: 15.6px; font-weight: 600; color: #FFFFFF; letter-spacing: 0.1px;
+}
+#system-status .ss-online {
+  position: absolute; left: 1px; width: 140px; top: 88px; line-height: 14px; text-align: center;
+  font-size: 10.2px; font-weight: 500; color: #04F5D2;
+}
+#system-status .ss-list { position: absolute; left: 150px; top: 25px; right: 10px; }
+#system-status .ss-row { display: flex; align-items: center; height: 18.6px; }
+#system-status .ss-dot {
+  flex: none; width: 11px; height: 11px; border-radius: 50%; background: var(--c);
+  box-shadow: 0 0 5px var(--c), 0 0 9px var(--cg);
+}
+#system-status .ss-label { width: 98.5px; margin-left: 10px; font-size: 10.2px; font-weight: 400; color: #CBD3E2; white-space: nowrap; }
+#system-status .ss-val { font-size: 10.1px; font-weight: 500; color: #03E0C8; white-space: nowrap; letter-spacing: 0.1px; }
